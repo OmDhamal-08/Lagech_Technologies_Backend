@@ -1,0 +1,14 @@
+django
+djangorestframework
+djangorestframework-simplejwt
+django-cors-headers
+django-allauth[socialaccount]
+django-apscheduler
+twilio
+python-dotenv
+openpyxl
+requests
+gunicorn
+psycopg2-binary
+whitenoise
+dj-database-url
