@@ -9,10 +9,12 @@ from django.http import HttpResponse
 from django.utils import timezone
 from django.db.models import Count
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
 from .models import ServiceRequest, Category
+from accounts.models import UserProfile
+from django.contrib.auth.models import User
 
 
 def is_admin(user):
@@ -232,3 +234,48 @@ def admin_export_excel(request):
     )
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def init_db(request):
+    """
+    Temporary endpoint to seed DB since Render Shell is blocked on free tier.
+    Creates default categories and the admin user.
+    """
+    # 1. Create Categories
+    cats = [
+        {'name': 'Chimney', 'description': 'Expert chimney repair and cleaning services.'},
+        {'name': 'Gas Stove', 'description': 'Professional gas stove repair and maintenance.'},
+        {'name': 'Geyser', 'description': 'Geyser installation, repair, and servicing.'},
+        {'name': 'Washing Machine', 'description': 'Washing machine repair and maintenance.'},
+        {'name': 'Plumbing', 'description': 'Expert plumbing services for your home.'},
+        {'name': 'AC / Cooler', 'description': 'AC and cooler repair, installation, and servicing.'},
+    ]
+
+    for cd in cats:
+        Category.objects.get_or_create(name=cd['name'], defaults={'description': cd['description']})
+
+    # 2. Create Admin User
+    email = getattr(settings, 'ADMIN_EMAIL', 'lagechtechnologies@gmail.com')
+    password = 'Lagech@2026'
+
+    u, created = User.objects.get_or_create(
+        email=email,
+        defaults={
+            'username': email,
+            'first_name': 'Lagech',
+            'last_name': 'Admin',
+        }
+    )
+    if created:
+        u.set_password(password)
+        u.save()
+        UserProfile.objects.get_or_create(user=u, defaults={'auth_provider': 'email'})
+
+    return Response({
+        "message": "Database successfully initialized! You can now log into the frontend.",
+        "categories_created": True,
+        "admin_created": created,
+        "admin_email": email
+    })
