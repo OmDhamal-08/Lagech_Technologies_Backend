@@ -132,9 +132,10 @@ SIMPLE_JWT = {
 }
 
 # ─── CORS Configuration ─────────────────────────────────────────
-FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
-CORS_ALLOWED_ORIGINS = [
-    FRONTEND_URL,
+FRONTEND_URLS_ENV = os.getenv('FRONTEND_URL', 'http://localhost:5173')
+FRONTEND_URLS = [url.strip() for url in FRONTEND_URLS_ENV.split(',') if url.strip()]
+
+CORS_ALLOWED_ORIGINS = FRONTEND_URLS + [
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:5175',
@@ -142,7 +143,7 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 
 # ─── CSRF Trusted Origins (production) ──────────────────────────
-CSRF_TRUSTED_ORIGINS = [FRONTEND_URL]
+CSRF_TRUSTED_ORIGINS = FRONTEND_URLS.copy()
 if not DEBUG:
     CSRF_TRUSTED_ORIGINS.append(f"https://{os.getenv('ALLOWED_HOSTS', '').split(',')[0]}")
 
