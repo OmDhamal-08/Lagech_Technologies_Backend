@@ -246,17 +246,20 @@ def init_db(request):
     try:
         # 1. Create Categories
         cats = [
-            {'name': 'Chimney', 'description': 'Expert chimney repair and cleaning services.'},
-            {'name': 'Gas Stove', 'description': 'Professional gas stove repair and maintenance.'},
-            {'name': 'Geyser', 'description': 'Geyser installation, repair, and servicing.'},
-            {'name': 'Washing Machine', 'description': 'Washing machine repair and maintenance.'},
-            {'name': 'Plumbing', 'description': 'Expert plumbing services for your home.'},
-            {'name': 'AC / Cooler', 'description': 'AC and cooler repair, installation, and servicing.'},
+            {'name': 'Chimney', 'slug': 'chimney', 'description': 'Expert chimney repair and cleaning services.'},
+            {'name': 'Gas Stove', 'slug': 'gas-stove', 'description': 'Professional gas stove repair and maintenance.'},
+            {'name': 'Geyser', 'slug': 'geyser', 'description': 'Geyser installation, repair, and servicing.'},
+            {'name': 'Washing Machine', 'slug': 'washing-machine', 'description': 'Washing machine repair and maintenance.'},
+            {'name': 'Plumbing', 'slug': 'plumbing', 'description': 'Expert plumbing services for your home.'},
+            {'name': 'AC / Cooler', 'slug': 'ac-cooler', 'description': 'AC and cooler repair, installation, and servicing.'},
         ]
 
         created_cats = 0
         for cd in cats:
-            obj, c = Category.objects.get_or_create(name=cd['name'], defaults={'description': cd['description']})
+            obj, c = Category.objects.get_or_create(
+                name=cd['name'], 
+                defaults={'slug': cd['slug'], 'description': cd['description']}
+            )
             if c: created_cats += 1
 
         # 2. Create Admin User
