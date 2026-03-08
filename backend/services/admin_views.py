@@ -243,39 +243,49 @@ def init_db(request):
     Temporary endpoint to seed DB since Render Shell is blocked on free tier.
     Creates default categories and the admin user.
     """
-    # 1. Create Categories
-    cats = [
-        {'name': 'Chimney', 'description': 'Expert chimney repair and cleaning services.'},
-        {'name': 'Gas Stove', 'description': 'Professional gas stove repair and maintenance.'},
-        {'name': 'Geyser', 'description': 'Geyser installation, repair, and servicing.'},
-        {'name': 'Washing Machine', 'description': 'Washing machine repair and maintenance.'},
-        {'name': 'Plumbing', 'description': 'Expert plumbing services for your home.'},
-        {'name': 'AC / Cooler', 'description': 'AC and cooler repair, installation, and servicing.'},
-    ]
+    try:
+        # 1. Create Categories
+        cats = [
+            {'name': 'Chimney', 'description': 'Expert chimney repair and cleaning services.'},
+            {'name': 'Gas Stove', 'description': 'Professional gas stove repair and maintenance.'},
+            {'name': 'Geyser', 'description': 'Geyser installation, repair, and servicing.'},
+            {'name': 'Washing Machine', 'description': 'Washing machine repair and maintenance.'},
+            {'name': 'Plumbing', 'description': 'Expert plumbing services for your home.'},
+            {'name': 'AC / Cooler', 'description': 'AC and cooler repair, installation, and servicing.'},
+        ]
 
-    for cd in cats:
-        Category.objects.get_or_create(name=cd['name'], defaults={'description': cd['description']})
+        created_cats = 0
+        for cd in cats:
+            obj, c = Category.objects.get_or_create(name=cd['name'], defaults={'description': cd['description']})
+            if c: created_cats += 1
 
-    # 2. Create Admin User
-    email = getattr(settings, 'ADMIN_EMAIL', 'lagechtechnologies@gmail.com')
-    password = 'Lagech@2026'
+        # 2. Create Admin User
+        email = getattr(settings, 'ADMIN_EMAIL', 'lagechtechnologies@gmail.com')
+        password = 'Lagech@2026'
 
-    u, created = User.objects.get_or_create(
-        email=email,
-        defaults={
-            'username': email,
-            'first_name': 'Lagech',
-            'last_name': 'Admin',
-        }
-    )
-    if created:
-        u.set_password(password)
-        u.save()
-        UserProfile.objects.get_or_create(user=u, defaults={'auth_provider': 'email'})
+        u, created = User.objects.get_or_create(
+            email=email,
+            defaults={
+                'username': email,
+                'first_name': 'Lagech',
+                'last_name': 'Admin',
+            }
+        )
+        if created:
+            u.set_password(password)
+            u.save()
+            UserProfile.objects.get_or_create(user=u, defaults={'auth_provider': 'email'})
 
-    return Response({
-        "message": "Database successfully initialized! You can now log into the frontend.",
-        "categories_created": True,
-        "admin_created": created,
-        "admin_email": email
-    })
+        return Response({
+            "message": "Database successfully initialized! You can now log into the frontend.",
+            "categories_created": created_cats,
+            "admin_created": created,
+            "admin_email": email
+        })
+    except Exception as e:
+        import traceback
+        return Response({
+            "error": "Failed to initialize database",
+            "details": str(e),
+            "traceback": traceback.format_exc()
+        }, status=500)
